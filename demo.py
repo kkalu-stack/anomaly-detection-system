@@ -105,6 +105,7 @@ async def dashboard():
     <html>
     <head>
         <title>Real-Time Anomaly Detection Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
             * {
@@ -307,12 +308,6 @@ async def dashboard():
                 margin-bottom: 30px;
             }
             
-            @media (min-width: 1200px) {
-                .charts-section {
-                    grid-template-columns: 1fr 1fr;
-                }
-            }
-            
             .chart-card {
                 background: rgba(255, 255, 255, 0.95);
                 backdrop-filter: blur(10px);
@@ -415,17 +410,213 @@ async def dashboard():
                 color: #95a5a6;
             }
             
-            @media (max-width: 768px) {
+            /* Mobile-first responsive design */
+            @media (max-width: 1200px) {
                 .charts-section {
                     grid-template-columns: 1fr;
                 }
                 
-                .stats-grid {
-                    grid-template-columns: 1fr;
+                .chart-card {
+                    height: auto;
+                    min-height: 350px;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                .container {
+                    padding: 15px;
+                }
+                
+                .header {
+                    padding: 15px 20px;
+                    margin-bottom: 20px;
                 }
                 
                 .header h1 {
+                    font-size: 1.8rem;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .header p {
+                    font-size: 1rem;
+                }
+                
+                .controls {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .btn {
+                    padding: 10px 20px;
+                    font-size: 0.9rem;
+                }
+                
+                .filters-section {
+                    padding: 20px;
+                }
+                
+                .filters-grid {
+                    grid-template-columns: 1fr;
+                    gap: 15px;
+                }
+                
+                .filter-select {
+                    padding: 12px;
+                    font-size: 1rem;
+                }
+                
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                    gap: 20px;
+                }
+                
+                .stat-card {
+                    padding: 20px;
+                }
+                
+                .stat-value {
                     font-size: 2rem;
+                }
+                
+                .chart-card {
+                    padding: 20px;
+                    height: auto;
+                    min-height: 300px;
+                }
+                
+                .chart-title {
+                    font-size: 1.1rem;
+                }
+                
+                .anomalies-section {
+                    padding: 20px;
+                }
+                
+                .anomalies-title {
+                    font-size: 1.1rem;
+                }
+                
+                .anomaly-item {
+                    padding: 12px;
+                    margin: 10px 0;
+                }
+                
+                .anomaly-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 8px;
+                }
+                
+                .anomaly-meta {
+                    flex-direction: column;
+                    gap: 5px;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .container {
+                    padding: 10px;
+                }
+                
+                .header {
+                    padding: 15px;
+                }
+                
+                .header h1 {
+                    font-size: 1.5rem;
+                }
+                
+                .header p {
+                    font-size: 0.9rem;
+                }
+                
+                .filters-section {
+                    padding: 15px;
+                }
+                
+                .filter-select {
+                    padding: 10px;
+                }
+                
+                .stat-card {
+                    padding: 15px;
+                }
+                
+                .stat-value {
+                    font-size: 1.8rem;
+                }
+                
+                .chart-card {
+                    padding: 15px;
+                    min-height: 250px;
+                }
+                
+                .anomalies-section {
+                    padding: 15px;
+                }
+                
+                .anomaly-item {
+                    padding: 10px;
+                }
+                
+                .anomaly-details {
+                    font-size: 0.85rem;
+                }
+                
+                .anomaly-meta {
+                    font-size: 0.75rem;
+                }
+            }
+            
+            /* iPhone-specific optimizations */
+            @media (max-width: 375px) {
+                .header h1 {
+                    font-size: 1.3rem;
+                }
+                
+                .stat-value {
+                    font-size: 1.6rem;
+                }
+                
+                .btn {
+                    padding: 8px 16px;
+                    font-size: 0.85rem;
+                }
+                
+                .filter-select {
+                    padding: 8px;
+                    font-size: 0.9rem;
+                }
+            }
+            
+            /* Landscape orientation for mobile */
+            @media (max-width: 768px) and (orientation: landscape) {
+                .header h1 {
+                    font-size: 1.6rem;
+                }
+                
+                .stats-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                
+                .charts-section {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+            
+            /* Touch-friendly improvements */
+            @media (hover: none) and (pointer: coarse) {
+                .btn {
+                    min-height: 44px;
+                }
+                
+                .filter-select {
+                    min-height: 44px;
+                }
+                
+                .anomaly-item {
+                    min-height: 60px;
                 }
             }
         </style>
@@ -668,15 +859,34 @@ async def dashboard():
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         interaction: {
                             mode: 'index',
                             intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 10,
+                                    font: {
+                                        size: window.innerWidth < 768 ? 10 : 12
+                                    }
+                                }
+                            }
                         },
                         scales: {
                             y: {
                                 type: 'linear',
                                 display: true,
                                 position: 'left',
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 10 : 12
+                                    }
+                                }
                             },
                             y1: {
                                 type: 'linear',
@@ -685,7 +895,19 @@ async def dashboard():
                                 grid: {
                                     drawOnChartArea: false,
                                 },
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 10 : 12
+                                    }
+                                }
                             },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 10 : 12
+                                    }
+                                }
+                            }
                         },
                     }
                 });
@@ -711,6 +933,7 @@ async def dashboard():
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: {
                                 display: false
@@ -721,11 +944,21 @@ async def dashboard():
                                 beginAtZero: true,
                                 grid: {
                                     color: 'rgba(0,0,0,0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 10 : 12
+                                    }
                                 }
                             },
                             x: {
                                 grid: {
                                     display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 10 : 12
+                                    }
                                 }
                             }
                         }
@@ -774,9 +1007,6 @@ async def dashboard():
                 // Update the display with filtered results
                 displayAnomalies(filteredAnomalies);
                 
-                // Update charts with filtered data
-                updateChartsWithFilteredData(filteredAnomalies);
-                
                 // Show filter status
                 const activeFilterList = Object.values(activeFilters).filter(f => f !== 'all').join(', ');
                 if (activeFilterList) {
@@ -800,9 +1030,8 @@ async def dashboard():
                     location: 'all'
                 };
                 
-                // Show all anomalies and update charts
+                // Show all anomalies
                 displayAnomalies(currentAnomalies);
-                updateChartsWithFilteredData(currentAnomalies);
                 console.log('Filters cleared');
             }
             
@@ -824,52 +1053,6 @@ async def dashboard():
                 `).join('');
                 
                 document.getElementById('anomalies-list').innerHTML = anomaliesHtml || '<p style="color: #7f8c8d; text-align: center; padding: 20px;">No anomalies match the selected filters.</p>';
-            }
-            
-            function updateChartsWithFilteredData(filteredAnomalies) {
-                const ctx2 = document.getElementById('anomalyChart').getContext('2d');
-                
-                // Anomaly Distribution Chart with filtered data
-                const anomalyTypes = {};
-                filteredAnomalies.forEach(a => {
-                    anomalyTypes[a.type] = (anomalyTypes[a.type] || 0) + 1;
-                });
-                
-                if (anomalyChart) anomalyChart.destroy();
-                anomalyChart = new Chart(ctx2, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(anomalyTypes),
-                        datasets: [{
-                            label: 'Anomaly Count',
-                            data: Object.values(anomalyTypes),
-                            backgroundColor: '#2196F3',
-                            borderColor: '#1976D2',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0,0,0,0.1)'
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
             }
             
             // Load data immediately and every 5 seconds
