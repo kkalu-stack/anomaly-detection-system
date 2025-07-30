@@ -1,5 +1,5 @@
 """
-Simple Demo for Anomaly Detection System
+Enhanced Demo for Anomaly Detection System
 """
 
 from fastapi import FastAPI, HTTPException
@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 import uvicorn
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 app = FastAPI(
@@ -16,13 +16,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Simulated data
+# Simulated data with more realistic patterns
 anomaly_data = {
     "total_events": 0,
     "anomalies_detected": 0,
     "processing_rate": 0,
     "accuracy": 95.2,
-    "latency_ms": 45
+    "latency_ms": 45,
+    "uptime_hours": 0,
+    "active_models": 3,
+    "data_sources": 4
 }
 
 @app.get("/")
@@ -35,11 +38,12 @@ async def health_check():
 
 @app.get("/api/stats")
 async def get_stats():
-    # Simulate real-time data
-    anomaly_data["total_events"] += random.randint(10, 50)
-    anomaly_data["anomalies_detected"] += random.randint(0, 3)
-    anomaly_data["processing_rate"] = random.randint(800, 1200)
-    anomaly_data["latency_ms"] = random.randint(30, 80)
+    # Simulate real-time data with more realistic patterns
+    anomaly_data["total_events"] += random.randint(50, 200)
+    anomaly_data["anomalies_detected"] += random.randint(0, 5)
+    anomaly_data["processing_rate"] = random.randint(800, 1500)
+    anomaly_data["latency_ms"] = random.randint(25, 120)
+    anomaly_data["uptime_hours"] += 0.1
     
     return {
         "metrics": anomaly_data,
@@ -49,19 +53,50 @@ async def get_stats():
 
 @app.get("/api/anomalies")
 async def get_recent_anomalies():
-    # Simulate recent anomalies
+    # Generate more realistic anomalies
+    anomaly_types = [
+        {"type": "FRAUD", "description": "Suspicious transaction pattern detected", "severity": "high"},
+        {"type": "QUALITY", "description": "Manufacturing defect identified", "severity": "medium"},
+        {"type": "SECURITY", "description": "Unauthorized access attempt", "severity": "high"},
+        {"type": "PERFORMANCE", "description": "System performance degradation", "severity": "low"},
+        {"type": "NETWORK", "description": "Unusual network traffic pattern", "severity": "medium"}
+    ]
+    
+    industries = ["financial", "manufacturing", "healthcare", "telecom", "retail", "energy"]
+    
     anomalies = []
-    for i in range(random.randint(1, 5)):
+    for i in range(random.randint(2, 6)):
+        anomaly_type = random.choice(anomaly_types)
         anomalies.append({
-            "id": f"anomaly_{random.randint(1000, 9999)}",
-            "timestamp": datetime.now().isoformat(),
-            "severity": random.choice(["low", "medium", "high"]),
-            "type": random.choice(["fraud", "quality", "security", "performance"]),
-            "confidence": round(random.uniform(0.7, 0.99), 2),
-            "description": f"Anomaly detected in {random.choice(['financial', 'manufacturing', 'healthcare', 'telecom'])} data"
+            "id": f"anomaly_{random.randint(10000, 99999)}",
+            "timestamp": (datetime.now() - timedelta(minutes=random.randint(1, 60))).isoformat(),
+            "severity": anomaly_type["severity"],
+            "type": anomaly_type["type"],
+            "confidence": round(random.uniform(0.75, 0.98), 2),
+            "description": f"{anomaly_type['description']} in {random.choice(industries)} data",
+            "source": random.choice(["API Gateway", "Database", "Message Queue", "External Service"]),
+            "location": random.choice(["US-East", "US-West", "EU-Central", "Asia-Pacific"])
         })
     
     return {"anomalies": anomalies, "count": len(anomalies)}
+
+@app.get("/api/performance")
+async def get_performance_data():
+    # Generate performance metrics for charts
+    hours = 24
+    performance_data = []
+    
+    for i in range(hours):
+        timestamp = datetime.now() - timedelta(hours=hours-i-1)
+        performance_data.append({
+            "timestamp": timestamp.isoformat(),
+            "events_per_second": random.randint(800, 1500),
+            "latency_ms": random.randint(25, 120),
+            "anomalies": random.randint(0, 8),
+            "accuracy": round(random.uniform(94.0, 97.0), 1)
+        })
+    
+    return {"performance": performance_data}
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard():
@@ -69,67 +104,380 @@ async def dashboard():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Anomaly Detection Dashboard</title>
+        <title>Real-Time Anomaly Detection Dashboard</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
-            body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-            .container { max-width: 1200px; margin: 0 auto; }
-            .header { background: #222; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
-            .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            .stat-value { font-size: 2em; font-weight: bold; color: #222; }
-            .stat-label { color: #666; margin-top: 5px; }
-            .anomalies-list { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            .anomaly-item { border-left: 4px solid #ff6b35; padding: 10px; margin: 10px 0; background: #f9f9f9; }
-            .high { border-left-color: #ff4444; }
-            .medium { border-left-color: #ff8800; }
-            .low { border-left-color: #ffbb33; }
-            .refresh-btn { background: #222; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-            .refresh-btn:hover { background: #333; }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: #333;
+                min-height: 100vh;
+            }
+            
+            .container {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            
+            .header {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 20px 30px;
+                border-radius: 15px;
+                margin-bottom: 30px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .header h1 {
+                color: #2c3e50;
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .header p {
+                color: #7f8c8d;
+                font-size: 1.1rem;
+            }
+            
+            .status-indicator {
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                background: #27ae60;
+                border-radius: 50%;
+                margin-left: 10px;
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+            
+            .controls {
+                display: flex;
+                gap: 15px;
+                margin-bottom: 30px;
+            }
+            
+            .btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            }
+            
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            }
+            
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+            
+            .stat-card {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 25px;
+                border-radius: 15px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                transition: transform 0.3s ease;
+            }
+            
+            .stat-card:hover {
+                transform: translateY(-5px);
+            }
+            
+            .stat-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 15px;
+            }
+            
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                color: white;
+            }
+            
+            .stat-value {
+                font-size: 2.5rem;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+            
+            .stat-label {
+                color: #7f8c8d;
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+            
+            .stat-trend {
+                font-size: 0.8rem;
+                margin-top: 5px;
+            }
+            
+            .trend-up { color: #27ae60; }
+            .trend-down { color: #e74c3c; }
+            
+            .charts-section {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+            
+            .chart-card {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 25px;
+                border-radius: 15px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .chart-title {
+                font-size: 1.3rem;
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 20px;
+            }
+            
+            .anomalies-section {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 25px;
+                border-radius: 15px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .anomalies-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            
+            .anomalies-title {
+                font-size: 1.3rem;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+            
+            .anomaly-item {
+                border-left: 4px solid #e74c3c;
+                padding: 15px;
+                margin: 15px 0;
+                background: rgba(231, 76, 60, 0.05);
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            }
+            
+            .anomaly-item:hover {
+                background: rgba(231, 76, 60, 0.1);
+                transform: translateX(5px);
+            }
+            
+            .anomaly-item.high { border-left-color: #e74c3c; }
+            .anomaly-item.medium { border-left-color: #f39c12; }
+            .anomaly-item.low { border-left-color: #f1c40f; }
+            
+            .anomaly-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+            
+            .anomaly-type {
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            
+            .anomaly-severity {
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+            
+            .severity-high { background: #e74c3c; color: white; }
+            .severity-medium { background: #f39c12; color: white; }
+            .severity-low { background: #f1c40f; color: #2c3e50; }
+            
+            .anomaly-details {
+                color: #7f8c8d;
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+            
+            .anomaly-meta {
+                display: flex;
+                gap: 15px;
+                margin-top: 8px;
+                font-size: 0.8rem;
+                color: #95a5a6;
+            }
+            
+            @media (max-width: 768px) {
+                .charts-section {
+                    grid-template-columns: 1fr;
+                }
+                
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .header h1 {
+                    font-size: 2rem;
+                }
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <h1>🚀 Real-Time Anomaly Detection Dashboard</h1>
-                <p>Live monitoring of anomaly detection system</p>
+                <h1>
+                    Real-Time Anomaly Detection Dashboard
+                    <span class="status-indicator"></span>
+                </h1>
+                <p>Live monitoring of enterprise anomaly detection system across multiple industries</p>
             </div>
             
-            <button class="refresh-btn" onclick="location.reload()">🔄 Refresh Data</button>
+            <div class="controls">
+                <button class="btn" onclick="location.reload()">🔄 Refresh Dashboard</button>
+                <button class="btn" onclick="window.open('/docs', '_blank')">📚 API Documentation</button>
+                <button class="btn" onclick="window.open('/health', '_blank')">💚 Health Check</button>
+            </div>
             
             <div class="stats-grid" id="stats">
                 <div class="stat-card">
-                    <div class="stat-value" id="total-events">0</div>
-                    <div class="stat-label">Total Events Processed</div>
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="total-events">0</div>
+                            <div class="stat-label">Total Events Processed</div>
+                        </div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📊</div>
+                    </div>
+                    <div class="stat-trend trend-up">↑ +12.5% from last hour</div>
                 </div>
+                
                 <div class="stat-card">
-                    <div class="stat-value" id="anomalies">0</div>
-                    <div class="stat-label">Anomalies Detected</div>
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="anomalies">0</div>
+                            <div class="stat-label">Anomalies Detected</div>
+                        </div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">🚨</div>
+                    </div>
+                    <div class="stat-trend trend-up">↑ +3 new in last 5 min</div>
                 </div>
+                
                 <div class="stat-card">
-                    <div class="stat-value" id="processing-rate">0</div>
-                    <div class="stat-label">Events/Second</div>
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="processing-rate">0</div>
+                            <div class="stat-label">Events/Second</div>
+                        </div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">⚡</div>
+                    </div>
+                    <div class="stat-trend trend-up">↑ +8.2% from baseline</div>
                 </div>
+                
                 <div class="stat-card">
-                    <div class="stat-value" id="accuracy">95.2%</div>
-                    <div class="stat-label">Detection Accuracy</div>
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="accuracy">95.2%</div>
+                            <div class="stat-label">Detection Accuracy</div>
+                        </div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">🎯</div>
+                    </div>
+                    <div class="stat-trend trend-up">↑ +0.3% improvement</div>
                 </div>
+                
                 <div class="stat-card">
-                    <div class="stat-value" id="latency">45ms</div>
-                    <div class="stat-label">Average Latency</div>
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="latency">45ms</div>
+                            <div class="stat-label">Average Latency</div>
+                        </div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">⚡</div>
+                    </div>
+                    <div class="stat-trend trend-down">↓ -12ms improvement</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="uptime">0h</div>
+                            <div class="stat-label">System Uptime</div>
+                        </div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);">🟢</div>
+                    </div>
+                    <div class="stat-trend trend-up">↑ 99.9% availability</div>
                 </div>
             </div>
             
-            <div class="anomalies-list">
-                <h2>Recent Anomalies</h2>
+            <div class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-title">Performance Metrics (24h)</div>
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">Anomaly Distribution</div>
+                    <canvas id="anomalyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="anomalies-section">
+                <div class="anomalies-header">
+                    <div class="anomalies-title">Recent Anomalies</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Auto-refresh every 5s</div>
+                </div>
                 <div id="anomalies-list">
-                    <p>Loading recent anomalies...</p>
+                    <p style="color: #7f8c8d; text-align: center; padding: 20px;">Loading recent anomalies...</p>
                 </div>
             </div>
         </div>
         
         <script>
+            let performanceChart, anomalyChart;
+            
             async function loadData() {
                 try {
+                    // Load stats
                     const statsResponse = await fetch('/api/stats');
                     const stats = await statsResponse.json();
                     
@@ -138,22 +486,121 @@ async def dashboard():
                     document.getElementById('processing-rate').textContent = stats.metrics.processing_rate.toLocaleString();
                     document.getElementById('accuracy').textContent = stats.metrics.accuracy + '%';
                     document.getElementById('latency').textContent = stats.metrics.latency_ms + 'ms';
+                    document.getElementById('uptime').textContent = Math.floor(stats.metrics.uptime_hours) + 'h';
                     
+                    // Load anomalies
                     const anomaliesResponse = await fetch('/api/anomalies');
                     const anomalies = await anomaliesResponse.json();
                     
                     const anomaliesHtml = anomalies.anomalies.map(anomaly => `
                         <div class="anomaly-item ${anomaly.severity}">
-                            <strong>${anomaly.type.toUpperCase()}</strong> - ${anomaly.description}
-                            <br><small>Confidence: ${anomaly.confidence} | Severity: ${anomaly.severity}</small>
+                            <div class="anomaly-header">
+                                <div class="anomaly-type">${anomaly.type}</div>
+                                <div class="anomaly-severity severity-${anomaly.severity}">${anomaly.severity}</div>
+                            </div>
+                            <div class="anomaly-details">${anomaly.description}</div>
+                            <div class="anomaly-meta">
+                                <span>Confidence: ${anomaly.confidence}</span>
+                                <span>Source: ${anomaly.source}</span>
+                                <span>Location: ${anomaly.location}</span>
+                                <span>${new Date(anomaly.timestamp).toLocaleTimeString()}</span>
+                            </div>
                         </div>
                     `).join('');
                     
-                    document.getElementById('anomalies-list').innerHTML = anomaliesHtml || '<p>No recent anomalies detected.</p>';
+                    document.getElementById('anomalies-list').innerHTML = anomaliesHtml || '<p style="color: #7f8c8d; text-align: center; padding: 20px;">No recent anomalies detected.</p>';
+                    
+                    // Load performance data for charts
+                    const performanceResponse = await fetch('/api/performance');
+                    const performance = await performanceResponse.json();
+                    
+                    updateCharts(performance.performance, anomalies.anomalies);
                     
                 } catch (error) {
                     console.error('Error loading data:', error);
                 }
+            }
+            
+            function updateCharts(performanceData, anomaliesData) {
+                const ctx1 = document.getElementById('performanceChart').getContext('2d');
+                const ctx2 = document.getElementById('anomalyChart').getContext('2d');
+                
+                // Performance Chart
+                if (performanceChart) performanceChart.destroy();
+                performanceChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: performanceData.map(d => new Date(d.timestamp).toLocaleTimeString()),
+                        datasets: [{
+                            label: 'Events/Second',
+                            data: performanceData.map(d => d.events_per_second),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Latency (ms)',
+                            data: performanceData.map(d => d.latency_ms),
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                            },
+                        },
+                    }
+                });
+                
+                // Anomaly Distribution Chart
+                const anomalyTypes = {};
+                anomaliesData.forEach(a => {
+                    anomalyTypes[a.type] = (anomalyTypes[a.type] || 0) + 1;
+                });
+                
+                if (anomalyChart) anomalyChart.destroy();
+                anomalyChart = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(anomalyTypes),
+                        datasets: [{
+                            data: Object.values(anomalyTypes),
+                            backgroundColor: [
+                                '#e74c3c',
+                                '#f39c12',
+                                '#27ae60',
+                                '#9b59b6',
+                                '#3498db'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
             }
             
             // Load data immediately and every 5 seconds
