@@ -172,6 +172,57 @@ async def dashboard():
                 margin-bottom: 30px;
             }
             
+            .filters-section {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 25px;
+                border-radius: 15px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                margin-bottom: 30px;
+            }
+            
+            .filters-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                align-items: end;
+            }
+            
+            .filter-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .filter-group label {
+                font-weight: 600;
+                color: #2c3e50;
+                font-size: 0.9rem;
+            }
+            
+            .filter-select {
+                padding: 10px 12px;
+                border: 2px solid #e0e6ed;
+                border-radius: 8px;
+                background: white;
+                color: #2c3e50;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            
+            .filter-select:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+            
+            .btn-secondary {
+                background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+                margin-top: 20px;
+            }
+            
             .btn {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
@@ -379,6 +430,71 @@ async def dashboard():
                 <button class="btn" onclick="location.reload()">🔄 Refresh Dashboard</button>
                 <button class="btn" onclick="window.open('/docs', '_blank')">📚 API Documentation</button>
                 <button class="btn" onclick="window.open('/health', '_blank')">💚 Health Check</button>
+            </div>
+            
+            <div class="filters-section">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📊 Dashboard Filters</h3>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="timeRange">⏰ Time Range:</label>
+                        <select id="timeRange" class="filter-select" onchange="applyFilters()">
+                            <option value="1h">Last Hour</option>
+                            <option value="24h" selected>Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="anomalyType">🚨 Anomaly Type:</label>
+                        <select id="anomalyType" class="filter-select" onchange="applyFilters()">
+                            <option value="all" selected>All Types</option>
+                            <option value="FRAUD">Fraud</option>
+                            <option value="QUALITY">Quality</option>
+                            <option value="SECURITY">Security</option>
+                            <option value="PERFORMANCE">Performance</option>
+                            <option value="NETWORK">Network</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="severity">⚠️ Severity:</label>
+                        <select id="severity" class="filter-select" onchange="applyFilters()">
+                            <option value="all" selected>All Severities</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="industry">🏭 Industry:</label>
+                        <select id="industry" class="filter-select" onchange="applyFilters()">
+                            <option value="all" selected>All Industries</option>
+                            <option value="financial">Financial</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="energy">Energy</option>
+                            <option value="telecom">Telecom</option>
+                            <option value="retail">Retail</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="location">🌍 Location:</label>
+                        <select id="location" class="filter-select" onchange="applyFilters()">
+                            <option value="all" selected>All Locations</option>
+                            <option value="US-East">US-East</option>
+                            <option value="US-West">US-West</option>
+                            <option value="EU-Central">EU-Central</option>
+                            <option value="Asia-Pacific">Asia-Pacific</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <button class="btn btn-secondary" onclick="clearFilters()">🗑️ Clear Filters</button>
+                    </div>
+                </div>
             </div>
             
             <div class="stats-grid" id="stats">
@@ -601,6 +717,38 @@ async def dashboard():
                         }
                     }
                 });
+            }
+            
+            // Filter functions
+            function applyFilters() {
+                const timeRange = document.getElementById('timeRange').value;
+                const anomalyType = document.getElementById('anomalyType').value;
+                const severity = document.getElementById('severity').value;
+                const industry = document.getElementById('industry').value;
+                const location = document.getElementById('location').value;
+                
+                // Show filter status
+                const activeFilters = [timeRange, anomalyType, severity, industry, location]
+                    .filter(f => f !== 'all')
+                    .join(', ');
+                
+                if (activeFilters) {
+                    console.log('Applied filters:', activeFilters);
+                    // In a real implementation, you would filter the data here
+                    // For demo purposes, we'll just show the filter status
+                    alert(`Filters applied: ${activeFilters}`);
+                }
+            }
+            
+            function clearFilters() {
+                document.getElementById('timeRange').value = '24h';
+                document.getElementById('anomalyType').value = 'all';
+                document.getElementById('severity').value = 'all';
+                document.getElementById('industry').value = 'all';
+                document.getElementById('location').value = 'all';
+                
+                console.log('Filters cleared');
+                alert('All filters cleared');
             }
             
             // Load data immediately and every 5 seconds
