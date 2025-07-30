@@ -383,9 +383,9 @@ async def dashboard():
                 text-transform: uppercase;
             }
             
-            .severity-high { background: #e74c3c; color: white; }
-            .severity-medium { background: #f39c12; color: white; }
-            .severity-low { background: #f1c40f; color: #2c3e50; }
+            .severity-high { background: #d32f2f; color: white; }
+            .severity-medium { background: #f57c00; color: white; }
+            .severity-low { background: #388e3c; color: white; }
             
             .anomaly-details {
                 color: #7f8c8d;
@@ -427,16 +427,16 @@ async def dashboard():
             </div>
             
             <div class="controls">
-                <button class="btn" onclick="location.reload()">🔄 Refresh Dashboard</button>
-                <button class="btn" onclick="window.open('/docs', '_blank')">📚 API Documentation</button>
-                <button class="btn" onclick="window.open('/health', '_blank')">💚 Health Check</button>
+                <button class="btn" onclick="location.reload()">Refresh Dashboard</button>
+                <button class="btn" onclick="window.open('/docs', '_blank')">API Documentation</button>
+                <button class="btn" onclick="window.open('/health', '_blank')">Health Check</button>
             </div>
             
             <div class="filters-section">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">📊 Dashboard Filters</h3>
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">Dashboard Filters</h3>
                 <div class="filters-grid">
                     <div class="filter-group">
-                        <label for="timeRange">⏰ Time Range:</label>
+                        <label for="timeRange">Time Range:</label>
                         <select id="timeRange" class="filter-select" onchange="applyFilters()">
                             <option value="1h">Last Hour</option>
                             <option value="24h" selected>Last 24 Hours</option>
@@ -446,7 +446,7 @@ async def dashboard():
                     </div>
                     
                     <div class="filter-group">
-                        <label for="anomalyType">🚨 Anomaly Type:</label>
+                        <label for="anomalyType">Anomaly Type:</label>
                         <select id="anomalyType" class="filter-select" onchange="applyFilters()">
                             <option value="all" selected>All Types</option>
                             <option value="FRAUD">Fraud</option>
@@ -458,7 +458,7 @@ async def dashboard():
                     </div>
                     
                     <div class="filter-group">
-                        <label for="severity">⚠️ Severity:</label>
+                        <label for="severity">Severity:</label>
                         <select id="severity" class="filter-select" onchange="applyFilters()">
                             <option value="all" selected>All Severities</option>
                             <option value="high">High</option>
@@ -468,7 +468,7 @@ async def dashboard():
                     </div>
                     
                     <div class="filter-group">
-                        <label for="industry">🏭 Industry:</label>
+                        <label for="industry">Industry:</label>
                         <select id="industry" class="filter-select" onchange="applyFilters()">
                             <option value="all" selected>All Industries</option>
                             <option value="financial">Financial</option>
@@ -481,7 +481,7 @@ async def dashboard():
                     </div>
                     
                     <div class="filter-group">
-                        <label for="location">🌍 Location:</label>
+                        <label for="location">Location:</label>
                         <select id="location" class="filter-select" onchange="applyFilters()">
                             <option value="all" selected>All Locations</option>
                             <option value="US-East">US-East</option>
@@ -492,7 +492,7 @@ async def dashboard():
                     </div>
                     
                     <div class="filter-group">
-                        <button class="btn btn-secondary" onclick="clearFilters()">🗑️ Clear Filters</button>
+                        <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
                     </div>
                 </div>
             </div>
@@ -608,23 +608,11 @@ async def dashboard():
                     const anomaliesResponse = await fetch('/api/anomalies');
                     const anomalies = await anomaliesResponse.json();
                     
-                    const anomaliesHtml = anomalies.anomalies.map(anomaly => `
-                        <div class="anomaly-item ${anomaly.severity}">
-                            <div class="anomaly-header">
-                                <div class="anomaly-type">${anomaly.type}</div>
-                                <div class="anomaly-severity severity-${anomaly.severity}">${anomaly.severity}</div>
-                            </div>
-                            <div class="anomaly-details">${anomaly.description}</div>
-                            <div class="anomaly-meta">
-                                <span>Confidence: ${anomaly.confidence}</span>
-                                <span>Source: ${anomaly.source}</span>
-                                <span>Location: ${anomaly.location}</span>
-                                <span>${new Date(anomaly.timestamp).toLocaleTimeString()}</span>
-                            </div>
-                        </div>
-                    `).join('');
+                    // Store current anomalies for filtering
+                    currentAnomalies = anomalies.anomalies;
                     
-                    document.getElementById('anomalies-list').innerHTML = anomaliesHtml || '<p style="color: #7f8c8d; text-align: center; padding: 20px;">No recent anomalies detected.</p>';
+                    // Display anomalies (respects current filters)
+                    displayAnomalies(currentAnomalies);
                     
                     // Load performance data for charts
                     const performanceResponse = await fetch('/api/performance');
@@ -720,12 +708,32 @@ async def dashboard():
             }
             
             // Filter functions
+            let currentAnomalies = [];
+            
             function applyFilters() {
                 const timeRange = document.getElementById('timeRange').value;
                 const anomalyType = document.getElementById('anomalyType').value;
                 const severity = document.getElementById('severity').value;
                 const industry = document.getElementById('industry').value;
                 const location = document.getElementById('location').value;
+                
+                // Filter the anomalies based on selections
+                let filteredAnomalies = currentAnomalies;
+                
+                if (anomalyType !== 'all') {
+                    filteredAnomalies = filteredAnomalies.filter(a => a.type === anomalyType);
+                }
+                
+                if (severity !== 'all') {
+                    filteredAnomalies = filteredAnomalies.filter(a => a.severity === severity);
+                }
+                
+                if (location !== 'all') {
+                    filteredAnomalies = filteredAnomalies.filter(a => a.location === location);
+                }
+                
+                // Update the display with filtered results
+                displayAnomalies(filteredAnomalies);
                 
                 // Show filter status
                 const activeFilters = [timeRange, anomalyType, severity, industry, location]
@@ -734,9 +742,6 @@ async def dashboard():
                 
                 if (activeFilters) {
                     console.log('Applied filters:', activeFilters);
-                    // In a real implementation, you would filter the data here
-                    // For demo purposes, we'll just show the filter status
-                    alert(`Filters applied: ${activeFilters}`);
                 }
             }
             
@@ -747,8 +752,29 @@ async def dashboard():
                 document.getElementById('industry').value = 'all';
                 document.getElementById('location').value = 'all';
                 
+                // Show all anomalies
+                displayAnomalies(currentAnomalies);
                 console.log('Filters cleared');
-                alert('All filters cleared');
+            }
+            
+            function displayAnomalies(anomalies) {
+                const anomaliesHtml = anomalies.map(anomaly => `
+                    <div class="anomaly-item ${anomaly.severity}">
+                        <div class="anomaly-header">
+                            <div class="anomaly-type">${anomaly.type}</div>
+                            <div class="anomaly-severity severity-${anomaly.severity}">${anomaly.severity}</div>
+                        </div>
+                        <div class="anomaly-details">${anomaly.description}</div>
+                        <div class="anomaly-meta">
+                            <span>Confidence: ${anomaly.confidence}</span>
+                            <span>Source: ${anomaly.source}</span>
+                            <span>Location: ${anomaly.location}</span>
+                            <span>${new Date(anomaly.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('anomalies-list').innerHTML = anomaliesHtml || '<p style="color: #7f8c8d; text-align: center; padding: 20px;">No anomalies match the selected filters.</p>';
             }
             
             // Load data immediately and every 5 seconds
