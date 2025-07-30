@@ -7,7 +7,6 @@ scipy==1.11.1
 
 # Streaming and Real-time Processing
 kafka-python==2.0.2
-apache-kafka==3.4.0
 redis==4.6.0
 
 # Data Visualization and Monitoring
@@ -51,5 +50,4 @@ prometheus-client==0.17.1
 structlog==23.1.0
 
 # Additional ML Libraries
-isolation-forest==0.2.2
 pyod==1.0.8 
