@@ -166,9 +166,14 @@ async def dashboard():
     return HTMLResponse(content=html_content)
 
 if __name__ == "__main__":
-    print("🚀 Starting Real-Time Anomaly Detection System Demo...")
-    print("📊 Dashboard available at: http://localhost:8000/dashboard")
-    print("🔗 API available at: http://localhost:8000/docs")
-    print("💚 Health check at: http://localhost:8000/health")
+    import os
     
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    # Get port from environment (Render sets this)
+    port = int(os.environ.get("PORT", 8000))
+    
+    print("🚀 Starting Real-Time Anomaly Detection System Demo...")
+    print(f"📊 Dashboard available at: http://localhost:{port}/dashboard")
+    print(f"🔗 API available at: http://localhost:{port}/docs")
+    print(f"💚 Health check at: http://localhost:{port}/health")
+    
+    uvicorn.run(app, host="0.0.0.0", port=port) 
