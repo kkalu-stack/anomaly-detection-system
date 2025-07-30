@@ -760,6 +760,9 @@ async def dashboard():
                 // Update the display with filtered results
                 displayAnomalies(filteredAnomalies);
                 
+                // Update charts with filtered data
+                updateChartsWithFilteredData(filteredAnomalies);
+                
                 // Show filter status
                 const activeFilterList = Object.values(activeFilters).filter(f => f !== 'all').join(', ');
                 if (activeFilterList) {
@@ -783,8 +786,9 @@ async def dashboard():
                     location: 'all'
                 };
                 
-                // Show all anomalies
+                // Show all anomalies and update charts
                 displayAnomalies(currentAnomalies);
+                updateChartsWithFilteredData(currentAnomalies);
                 console.log('Filters cleared');
             }
             
@@ -806,6 +810,52 @@ async def dashboard():
                 `).join('');
                 
                 document.getElementById('anomalies-list').innerHTML = anomaliesHtml || '<p style="color: #7f8c8d; text-align: center; padding: 20px;">No anomalies match the selected filters.</p>';
+            }
+            
+            function updateChartsWithFilteredData(filteredAnomalies) {
+                const ctx2 = document.getElementById('anomalyChart').getContext('2d');
+                
+                // Anomaly Distribution Chart with filtered data
+                const anomalyTypes = {};
+                filteredAnomalies.forEach(a => {
+                    anomalyTypes[a.type] = (anomalyTypes[a.type] || 0) + 1;
+                });
+                
+                if (anomalyChart) anomalyChart.destroy();
+                anomalyChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(anomalyTypes),
+                        datasets: [{
+                            label: 'Anomaly Count',
+                            data: Object.values(anomalyTypes),
+                            backgroundColor: '#2196F3',
+                            borderColor: '#1976D2',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
             }
             
             // Load data immediately and every 5 seconds
