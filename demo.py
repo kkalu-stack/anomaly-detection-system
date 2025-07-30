@@ -115,7 +115,7 @@ async def dashboard():
             
             body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
                 color: #333;
                 min-height: 100vh;
             }
@@ -224,7 +224,7 @@ async def dashboard():
             }
             
             .btn {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
                 color: white;
                 border: none;
                 padding: 12px 24px;
@@ -504,7 +504,7 @@ async def dashboard():
                             <div class="stat-value" id="total-events">0</div>
                             <div class="stat-label">Total Events Processed</div>
                         </div>
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📊</div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);">📊</div>
                     </div>
                     <div class="stat-trend trend-up">↑ +12.5% from last hour</div>
                 </div>
@@ -611,8 +611,8 @@ async def dashboard():
                     // Store current anomalies for filtering
                     currentAnomalies = anomalies.anomalies;
                     
-                    // Display anomalies (respects current filters)
-                    displayAnomalies(currentAnomalies);
+                    // Apply current filters to new data
+                    applyFiltersToData();
                     
                     // Load performance data for charts
                     const performanceResponse = await fetch('/api/performance');
@@ -709,39 +709,48 @@ async def dashboard():
             
             // Filter functions
             let currentAnomalies = [];
+            let activeFilters = {
+                timeRange: '24h',
+                anomalyType: 'all',
+                severity: 'all',
+                industry: 'all',
+                location: 'all'
+            };
             
             function applyFilters() {
-                const timeRange = document.getElementById('timeRange').value;
-                const anomalyType = document.getElementById('anomalyType').value;
-                const severity = document.getElementById('severity').value;
-                const industry = document.getElementById('industry').value;
-                const location = document.getElementById('location').value;
+                // Store current filter values
+                activeFilters.timeRange = document.getElementById('timeRange').value;
+                activeFilters.anomalyType = document.getElementById('anomalyType').value;
+                activeFilters.severity = document.getElementById('severity').value;
+                activeFilters.industry = document.getElementById('industry').value;
+                activeFilters.location = document.getElementById('location').value;
                 
-                // Filter the anomalies based on selections
+                // Apply filters to current data
+                applyFiltersToData();
+            }
+            
+            function applyFiltersToData() {
                 let filteredAnomalies = currentAnomalies;
                 
-                if (anomalyType !== 'all') {
-                    filteredAnomalies = filteredAnomalies.filter(a => a.type === anomalyType);
+                if (activeFilters.anomalyType !== 'all') {
+                    filteredAnomalies = filteredAnomalies.filter(a => a.type === activeFilters.anomalyType);
                 }
                 
-                if (severity !== 'all') {
-                    filteredAnomalies = filteredAnomalies.filter(a => a.severity === severity);
+                if (activeFilters.severity !== 'all') {
+                    filteredAnomalies = filteredAnomalies.filter(a => a.severity === activeFilters.severity);
                 }
                 
-                if (location !== 'all') {
-                    filteredAnomalies = filteredAnomalies.filter(a => a.location === location);
+                if (activeFilters.location !== 'all') {
+                    filteredAnomalies = filteredAnomalies.filter(a => a.location === activeFilters.location);
                 }
                 
                 // Update the display with filtered results
                 displayAnomalies(filteredAnomalies);
                 
                 // Show filter status
-                const activeFilters = [timeRange, anomalyType, severity, industry, location]
-                    .filter(f => f !== 'all')
-                    .join(', ');
-                
-                if (activeFilters) {
-                    console.log('Applied filters:', activeFilters);
+                const activeFilterList = Object.values(activeFilters).filter(f => f !== 'all').join(', ');
+                if (activeFilterList) {
+                    console.log('Applied filters:', activeFilterList);
                 }
             }
             
@@ -751,6 +760,15 @@ async def dashboard():
                 document.getElementById('severity').value = 'all';
                 document.getElementById('industry').value = 'all';
                 document.getElementById('location').value = 'all';
+                
+                // Reset active filters
+                activeFilters = {
+                    timeRange: '24h',
+                    anomalyType: 'all',
+                    severity: 'all',
+                    industry: 'all',
+                    location: 'all'
+                };
                 
                 // Show all anomalies
                 displayAnomalies(currentAnomalies);
