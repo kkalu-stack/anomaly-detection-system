@@ -504,7 +504,6 @@ async def dashboard():
                             <div class="stat-value" id="total-events">0</div>
                             <div class="stat-label">Total Events Processed</div>
                         </div>
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);">📊</div>
                     </div>
                     <div class="stat-trend trend-up">↑ +12.5% from last hour</div>
                 </div>
@@ -515,7 +514,6 @@ async def dashboard():
                             <div class="stat-value" id="anomalies">0</div>
                             <div class="stat-label">Anomalies Detected</div>
                         </div>
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">🚨</div>
                     </div>
                     <div class="stat-trend trend-up">↑ +3 new in last 5 min</div>
                 </div>
@@ -526,7 +524,6 @@ async def dashboard():
                             <div class="stat-value" id="processing-rate">0</div>
                             <div class="stat-label">Events/Second</div>
                         </div>
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">⚡</div>
                     </div>
                     <div class="stat-trend trend-up">↑ +8.2% from baseline</div>
                 </div>
@@ -537,7 +534,6 @@ async def dashboard():
                             <div class="stat-value" id="accuracy">95.2%</div>
                             <div class="stat-label">Detection Accuracy</div>
                         </div>
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">🎯</div>
                     </div>
                     <div class="stat-trend trend-up">↑ +0.3% improvement</div>
                 </div>
@@ -548,7 +544,6 @@ async def dashboard():
                             <div class="stat-value" id="latency">45ms</div>
                             <div class="stat-label">Average Latency</div>
                         </div>
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">⚡</div>
                     </div>
                     <div class="stat-trend trend-down">↓ -12ms improvement</div>
                 </div>
@@ -559,7 +554,6 @@ async def dashboard():
                             <div class="stat-value" id="uptime">0h</div>
                             <div class="stat-label">System Uptime</div>
                         </div>
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);">🟢</div>
                     </div>
                     <div class="stat-trend trend-up">↑ 99.9% availability</div>
                 </div>
@@ -572,7 +566,7 @@ async def dashboard():
                 </div>
                 
                 <div class="chart-card">
-                    <div class="chart-title">Anomaly Distribution</div>
+                    <div class="chart-title">Anomaly Distribution by Type</div>
                     <canvas id="anomalyChart" width="400" height="200"></canvas>
                 </div>
             </div>
@@ -590,6 +584,14 @@ async def dashboard():
         
         <script>
             let performanceChart, anomalyChart;
+            let currentAnomalies = [];
+            let activeFilters = {
+                timeRange: '24h',
+                anomalyType: 'all',
+                severity: 'all',
+                industry: 'all',
+                location: 'all'
+            };
             
             async function loadData() {
                 try {
@@ -682,25 +684,35 @@ async def dashboard():
                 
                 if (anomalyChart) anomalyChart.destroy();
                 anomalyChart = new Chart(ctx2, {
-                    type: 'doughnut',
+                    type: 'bar',
                     data: {
                         labels: Object.keys(anomalyTypes),
                         datasets: [{
+                            label: 'Anomaly Count',
                             data: Object.values(anomalyTypes),
-                            backgroundColor: [
-                                '#e74c3c',
-                                '#f39c12',
-                                '#27ae60',
-                                '#9b59b6',
-                                '#3498db'
-                            ]
+                            backgroundColor: '#2196F3',
+                            borderColor: '#1976D2',
+                            borderWidth: 1
                         }]
                     },
                     options: {
                         responsive: true,
                         plugins: {
                             legend: {
-                                position: 'bottom',
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
@@ -708,14 +720,6 @@ async def dashboard():
             }
             
             // Filter functions
-            let currentAnomalies = [];
-            let activeFilters = {
-                timeRange: '24h',
-                anomalyType: 'all',
-                severity: 'all',
-                industry: 'all',
-                location: 'all'
-            };
             
             function applyFilters() {
                 // Store current filter values
@@ -725,6 +729,9 @@ async def dashboard():
                 activeFilters.industry = document.getElementById('industry').value;
                 activeFilters.location = document.getElementById('location').value;
                 
+                console.log('Filters changed:', activeFilters);
+                console.log('Current anomalies count:', currentAnomalies.length);
+                
                 // Apply filters to current data
                 applyFiltersToData();
             }
@@ -732,16 +739,22 @@ async def dashboard():
             function applyFiltersToData() {
                 let filteredAnomalies = currentAnomalies;
                 
+                console.log('Applying filters to', currentAnomalies.length, 'anomalies');
+                console.log('Active filters:', activeFilters);
+                
                 if (activeFilters.anomalyType !== 'all') {
                     filteredAnomalies = filteredAnomalies.filter(a => a.type === activeFilters.anomalyType);
+                    console.log('After type filter:', filteredAnomalies.length, 'anomalies');
                 }
                 
                 if (activeFilters.severity !== 'all') {
                     filteredAnomalies = filteredAnomalies.filter(a => a.severity === activeFilters.severity);
+                    console.log('After severity filter:', filteredAnomalies.length, 'anomalies');
                 }
                 
                 if (activeFilters.location !== 'all') {
                     filteredAnomalies = filteredAnomalies.filter(a => a.location === activeFilters.location);
+                    console.log('After location filter:', filteredAnomalies.length, 'anomalies');
                 }
                 
                 // Update the display with filtered results
