@@ -307,6 +307,12 @@ async def dashboard():
                 margin-bottom: 30px;
             }
             
+            @media (min-width: 1200px) {
+                .charts-section {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+            
             .chart-card {
                 background: rgba(255, 255, 255, 0.95);
                 backdrop-filter: blur(10px);
@@ -314,6 +320,14 @@ async def dashboard():
                 border-radius: 15px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
                 border: 1px solid rgba(255, 255, 255, 0.2);
+                height: 400px;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .chart-card canvas {
+                flex: 1;
+                max-height: 300px;
             }
             
             .chart-title {
